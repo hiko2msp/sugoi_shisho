@@ -3,8 +3,8 @@ import { version } from '../package.json';
 
 const manifest = defineManifest(async (env) => ({
   manifest_version: 3,
-  name: `${env.mode === 'development' ? '[Dev] ' : ''}RAG`,
-  description: 'RAG',
+  name: `${env.mode === 'development' ? '[Dev] ' : ''}SugoiShisho`,
+  description: 'SugoiShisho はページ内の情報についてなんでも答えてくれます',
   version,
   background: {
     service_worker: 'background/index.ts',

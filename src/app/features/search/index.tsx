@@ -1,28 +1,32 @@
 import { ChangeEventHandler, useState } from "react";
 import { replaceBackticksWithHTMLTags } from "./htmlParser";
 
+const borderSetting = {
+  borderRadius: '10px',
+  borderColor: '#999',
+  borderWidth: '1px',
+}
+
 const textStyle: React.CSSProperties = {
-  borderColor: 'black',
-  borderWidth: '1',
-  backgroundColor: '#EEEEEE',
-  borderRadius: '5px',
-  padding: '5px',
+  backgroundColor: '#EEE',
+  padding: '10px',
   margin: '10px',
   width: '300px',
+  ...borderSetting,
 }
 const buttonStyle: React.CSSProperties = {
   width: '50px',
   height: '30px',
-  backgroundColor: 'lightblue',
-  borderRadius: '10px',
-  margin: '0px 10px 0px 0px'
+  backgroundColor: '#EEE',
+  margin: '0px 10px 0px 0px',
+  ...borderSetting,
 }
 const resetButtonStyle: React.CSSProperties = {
   width: '70px',
   height: '30px',
-  backgroundColor: 'lightgreen',
-  borderRadius: '10px',
+  backgroundColor: '#EEE',
   margin: '0px 10px 0px 0px',
+  ...borderSetting,
 }
 const parentStyle: React.CSSProperties = {
   display: 'flex',
@@ -39,6 +43,7 @@ const assistantMessageStyle: React.CSSProperties = {
   padding: '2px',
   margin: '0px 100px 1rem 0px',
   backgroundColor: '#EEEEEE',
+  minHeight: '1rem',
 }
 const userMessageStyle: React.CSSProperties = {
   borderRadius: '5px',
@@ -47,6 +52,7 @@ const userMessageStyle: React.CSSProperties = {
   padding: '2px',
   margin: '0px 0px 1rem 100px',
   backgroundColor: '#EEEEEE',
+  minHeight: '1rem',
 }
 async function getCurrentTabId() {
   let queryOptions = { active: true, lastFocusedWindow: true };
@@ -54,19 +60,15 @@ async function getCurrentTabId() {
   return tab?.id;
 }
 
-type OpenAIConfig = { apiBase: string, apiKey: string, systemPrompt: string }
+type OpenAIConfig = { apiBase: string, apiKey: string, systemPrompt: string, maxTokens: number }
 const getOpenAIConfig = async (): Promise<OpenAIConfig> => {
   return new Promise<OpenAIConfig>(resolve => {
     chrome.storage.sync.get(data => {
-      console.log('get from storage', {
-        apiBase: data.apiBase,
-        apiKey: data.apiKey,
-        systemPrompt: data.systemPrompt,
-      })
       resolve({
         apiBase: data.apiBase,
         apiKey: data.apiKey,
         systemPrompt: data.systemPrompt,
+        maxTokens: data.maxTokens,
       })
     })
   })
@@ -87,7 +89,7 @@ const getCurrentContent = async () => {
 
 const say = async (text: string) => {
 
-  const { apiKey, apiBase, systemPrompt } = await getOpenAIConfig();
+  const { apiKey, apiBase, systemPrompt, maxTokens } = await getOpenAIConfig();
   const response = await fetch(`${apiBase}/chat/completions`, {
     method: "POST",
     headers: {
@@ -100,7 +102,7 @@ const say = async (text: string) => {
         { role: "system", content: systemPrompt },
         { role: "user", content: text },
       ],
-      max_tokens: 100,
+      max_tokens: maxTokens,
       temperature: 0.9,
     }),
   });
